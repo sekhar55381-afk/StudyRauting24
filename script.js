@@ -62,6 +62,19 @@ const state = {
   theme: 'light'
 };
 
+const firebaseConfig = {
+  apiKey: 'PASTE_YOUR_API_KEY',
+  authDomain: 'YOUR_PROJECT.firebaseapp.com',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_PROJECT.appspot.com',
+  messagingSenderId: 'YOUR_MESSAGING_ID',
+  appId: 'YOUR_APP_ID'
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 const els = {
   authView: document.getElementById('authView'),
   studentView: document.getElementById('studentView'),
@@ -95,6 +108,34 @@ const els = {
   attendanceValue: document.getElementById('attendanceValue'),
   pendingValue: document.getElementById('pendingValue')
 };
+
+async function getUserRole(uid) {
+  try {
+    const userDoc = await db.collection('users').doc(uid).get();
+    if (userDoc.exists) {
+      return userDoc.data().role || 'student';
+    }
+    return 'student';
+  } catch (error) {
+    console.error('Role fetch failed:', error);
+    return 'student';
+  }
+}
+
+async function createUserProfile(uid, email, role) {
+  const userRef = db.collection('users').doc(uid);
+  const userDoc = await userRef.get();
+
+  if (!userDoc.exists) {
+    await userRef.set({
+      uid,
+      email,
+      role,
+      name: email.split('@')[0],
+      createdAt: new Date().toISOString()
+    });
+  }
+}
 
 function setView(viewName) {
   state.currentView = viewName;
@@ -317,45 +358,57 @@ function renderCodingTasks() {
     .join('');
 }
 
-function loginUser(email, password) {
-  let matchedKey = null;
+async function loginUser(email, password, selectedRole) {
+  try {
+    const result = await auth.signInWithEmailAndPassword(email, password);
+    const uid = result.user.uid;
+    const userRole = await getUserRole(uid);
 
-  Object.entries(demoUsers).forEach(([key, user]) => {
-    if (user.email === email && user.password === password) {
-      matchedKey = key;
+    if (selectedRole && userRole !== selectedRole) {
+      await auth.signOut();
+      throw new Error(`This account is not a ${selectedRole}.`);
     }
-  });
 
-  if (!matchedKey) {
-    alert('Invalid email or password. Use the demo credentials shown below.');
-    return;
+    const userRef = db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      if (userData.role === 'admin') {
+        setView('adminView');
+        renderAdminDashboard();
+        els.greetingText.textContent = `Welcome back, ${userData.name || 'Admin'}`;
+      } else {
+        setView('studentView');
+        renderStudentDashboard();
+        els.greetingText.textContent = `Welcome back, ${userData.name || 'Student'}`;
+      }
+    } else {
+      await createUserProfile(uid, email, selectedRole || 'student');
+      if (selectedRole === 'admin') {
+        setView('adminView');
+        renderAdminDashboard();
+      } else {
+        setView('studentView');
+        renderStudentDashboard();
+      }
+    }
+
+    state.authenticated = true;
+    state.role = userRole || selectedRole || 'student';
+    els.authView.classList.remove('active');
+    els.sidebar.style.display = 'flex';
+  } catch (error) {
+    console.error(error);
+    alert(error.message || 'Invalid email or password.');
   }
-
-  const user = demoUsers[matchedKey];
-  state.authenticated = true;
-  state.role = user.role;
-
-  els.authView.classList.remove('active');
-  els.sidebar.style.display = 'flex';
-
-  if (user.role === 'admin') {
-    setView('adminView');
-    els.pageTitle.textContent = 'Admin Panel';
-    renderAdminDashboard();
-  } else {
-    setView('studentView');
-    renderStudentDashboard();
-  }
-
-  els.greetingText.textContent = `Welcome back, ${user.name}`;
-  els.authTitle.textContent = `${user.role === 'admin' ? 'Admin' : 'Student'} Login`;
 }
 
 function handleLogin(event) {
   event.preventDefault();
   const email = document.getElementById('emailInput').value.trim();
   const password = document.getElementById('passwordInput').value.trim();
-  loginUser(email, password);
+  const chosenRole = document.querySelector('.role-btn.active')?.dataset.role || 'student';
+  loginUser(email, password, chosenRole);
 }
 
 function handleRoleSwitch(targetRole) {
@@ -367,7 +420,13 @@ function handleRoleSwitch(targetRole) {
   els.authTitle.textContent = targetRole === 'admin' ? 'Admin Login' : 'Student Login';
 }
 
-function handleLogout() {
+async function handleLogout() {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error(error);
+  }
+
   state.authenticated = false;
   els.authView.classList.add('active');
   setView('studentView');
@@ -437,6 +496,32 @@ function initAll() {
     renderAdminDashboard();
   });
 
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+      const role = await getUserRole(user.uid);
+      state.authenticated = true;
+      state.role = role;
+      els.authView.classList.remove('active');
+      els.sidebar.style.display = 'flex';
+      if (role === 'admin') {
+        setView('adminView');
+        renderAdminDashboard();
+        els.greetingText.textContent = `Welcome back, ${user.email || 'Admin'}`;
+      } else {
+        setView('studentView');
+        renderStudentDashboard();
+        els.greetingText.textContent = `Welcome back, ${user.email || 'Student'}`;
+      }
+    } else {
+      state.authenticated = false;
+      els.authView.classList.add('active');
+      els.studentView.classList.remove('active');
+      els.adminView.classList.remove('active');
+      els.pageTitle.textContent = 'Student Dashboard';
+      els.greetingText.textContent = 'Good morning';
+    }
+  });
+
   els.authView.classList.add('active');
   els.studentView.classList.remove('active');
   els.adminView.classList.remove('active');
@@ -445,4 +530,3 @@ function initAll() {
 }
 
 initAll();
-
