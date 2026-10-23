@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyRauting24</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-box">
+          <div class="brand-logo">SR</div>
+          <div>
+            <p class="eyebrow">Learning Hub</p>
+            <h2>StudyRauting24</h2>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <button class="nav-item active" data-view="studentView">
+            <span>🏠</span>
+            Dashboard
+          </button>
+          <button class="nav-item" data-view="timetableView">
+            <span>📅</span>
+            Timetable
+          </button>
+          <button class="nav-item" data-view="progressView">
+            <span>📊</span>
+            Progress
+          </button>
+          <button class="nav-item" data-view="attendanceView">
+            <span>✅</span>
+            Attendance
+          </button>
+          <button class="nav-item" data-view="codingView">
+            <span>💻</span>
+            Coding
+          </button>
+        </nav>
+
+        <div class="sidebar-card">
+          <p class="small-label">Today's focus</p>
+          <h4>Physics + Coding</h4>
+          <div class="mini-progress">
+            <span style="width: 78%"></span>
+          </div>
+          <p class="tiny-text">78% completed</p>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="greetingText">Good morning</p>
+            <h1 id="pageTitle">Student Dashboard</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-btn" id="themeToggle">🌙 Mode</button>
+            <button class="primary-btn" id="logoutBtn">Logout</button>
+          </div>
+        </header>
+
+        <section class="auth-view active" id="authView">
+          <div class="auth-card">
+            <div class="auth-visual">
+              <div class="visual-badge">Study smarter</div>
+              <h2>Track your daily study + coding routine</h2>
+              <p>
+                Daily attendance, subject progress, coding practice, and admin
+                management in one clean dashboard.
+              </p>
+              <ul>
+                <li>✔ Study hours tracking</li>
+                <li>✔ Coding practice dashboard</li>
+                <li>✔ Admin attendance control</li>
+              </ul>
+            </div>
+
+            <div class="auth-form-box">
+              <div class="role-switcher">
+                <button class="role-btn active" data-role="student">Student</button>
+                <button class="role-btn" data-role="admin">Admin</button>
+              </div>
+
+              <h3 id="authTitle">Student Login</h3>
+
+              <form id="loginForm">
+                <label>
+                  <span>Email</span>
+                  <input type="email" id="emailInput" placeholder="student@gmail.com" required />
+                </label>
+
+                <label>
+                  <span>Password</span>
+                  <input type="password" id="passwordInput" placeholder="••••••••" required />
+                </label>
+
+                <button type="submit" class="primary-btn wide">Login</button>
+              </form>
+
+              <div class="demo-box">
+                <p>Demo accounts</p>
+                <small>Student: student@study.com / student123</small>
+                <small>Admin: admin@study.com / admin123</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="studentView">
+          <div class="stats-grid">
+            <article class="stat-card accent-blue">
+              <div class="icon">📘</div>
+              <div>
+                <p>Study Hours</p>
+                <h3 id="studyHoursValue">0h</h3>
+              </div>
+            </article>
+
+            <article class="stat-card accent-cyan">
+              <div class="icon">💻</div>
+              <div>
+                <p>Coding Hours</p>
+                <h3 id="codingHoursValue">0h</h3>
+              </div>
+            </article>
+
+            <article class="stat-card accent-green">
+              <div class="icon">✅</div>
+              <div>
+                <p>Attendance</p>
+                <h3 id="attendanceValue">0%</h3>
+              </div>
+            </article>
+
+            <article class="stat-card accent-orange">
+              <div class="icon">⏳</div>
+              <div>
+                <p>Pending</p>
+                <h3 id="pendingValue">0 tasks</h3>
+              </div>
+            </article>
+          </div>
+
+          <div class="content-grid two-col">
+            <section class="panel-card">
+              <div class="panel-header">
+                <h3>Today's timetable</h3>
+                <button class="small-btn" id="markAllDone">Mark all done</button>
+              </div>
+              <div id="timetableList" class="task-list"></div>
+            </section>
+
+            <section class="panel-card">
+              <div class="panel-header">
+                <h3>Subject progress</h3>
+                <span class="badge">Live</span>
+              </div>
+              <div id="subjectProgress" class="progress-stack"></div>
+            </section>
+          </div>
+
+          <div class="content-grid two-col lower-grid">
+            <section class="panel-card">
+              <div class="panel-header">
+                <h3>Daily attendance</h3>
+                <span class="badge secondary">This week</span>
+              </div>
+              <div id="attendanceTable" class="attendance-table"></div>
+            </section>
+
+            <section class="panel-card">
+              <div class="panel-header">
+                <h3>Performance report</h3>
+              </div>
+              <div id="performanceReport" class="report-box"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page-view" id="adminView">
+          <div class="stats-grid admin-grid">
+            <article class="stat-card accent-blue">
+              <div class="icon">👥</div>
+              <div>
+                <p>Total Students</p>
+                <h3 id="adminStudentCount">0</h3>
+              </div>
+            </article>
+
+            <article class="stat-card accent-green">
+              <div class="icon">🏆</div>
+              <div>
+                <p>Avg Attendance</p>
+                <h3 id="avgAttendanceValue">0%</h3>
+              </div>
+            </article>
+
+            <article class="stat-card accent-orange">
+              <div class="icon">⚠️</div>
+              <div>
+                <p>Needs Focus</p>
+                <h3 id="needsFocusCount">0</h3>
+              </div>
+            </article>
+          </div>
+
+          <section class="panel-card admin-panel">
+            <div class="panel-header">
+              <h3>Student attendance manager</h3>
+              <button class="small-btn success" id="refreshAdmin">Refresh</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Study</th>
+                    <th>Coding</th>
+                    <th>Attendance</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="page-view" id="timetableView">
+          <section class="panel-card full-panel">
+            <div class="panel-header">
+              <h3>Weekly timetable</h3>
+            </div>
+            <div id="weeklyTimetable" class="weekly-grid"></div>
+          </section>
+        </section>
+
+        <section class="page-view" id="progressView">
+          <section class="panel-card full-panel">
+            <div class="panel-header">
+              <h3>Progress overview</h3>
+            </div>
+            <div id="progressOverview" class="chart-panel"></div>
+          </section>
+        </section>
+
+        <section class="page-view" id="attendanceView">
+          <section class="panel-card full-panel">
+            <div class="panel-header">
+              <h3>Attendance log</h3>
+            </div>
+            <div id="attendanceLog" class="log-list"></div>
+          </section>
+        </section>
+
+        <section class="page-view" id="codingView">
+          <section class="panel-card full-panel">
+            <div class="panel-header">
+              <h3>Coding practice tracker</h3>
+            </div>
+            <div id="codingTasks" class="coding-grid"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
